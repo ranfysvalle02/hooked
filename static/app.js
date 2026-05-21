@@ -6,60 +6,94 @@
     infoFill: "rgba(90, 180, 255, 0.35)",
     outrage: "#ff4d5a",
     outrageFill: "rgba(255, 77, 90, 0.45)",
-    wellbeing: "rgba(150, 220, 180, 0.85)",
-    wellbeingDim: "rgba(150, 220, 180, 0.3)",
     grid: "rgba(255, 255, 255, 0.05)",
     tick: "#6e7681",
-    lockin: "rgba(255, 77, 90, 0.85)",
+    lockinOutrage: "rgba(255, 77, 90, 0.85)",
+    lockinInfo: "rgba(90, 180, 255, 0.85)",
   };
 
-  // Plain-English narrator copy, keyed to outrage probability thresholds.
-  // The narrator is the entire educational payload — keep it human.
-  const NARRATOR_PHASES = [
+  // ============================================================
+  // Narrator copy. Two parallel tracks: the outrage spiral
+  // (lambda low) and the quality spiral (lambda high). The
+  // narrator follows whichever direction the policy is actually
+  // taking, so dragging the slider mid-run gracefully reframes
+  // the story instead of contradicting itself.
+  // ============================================================
+  const NARRATOR_PHASES_OUTRAGE = [
     {
       key: "neutral",
-      min: 0.0,
-      cls: "",
-      headline: "The algorithm starts with no opinion at all.",
+      headline: "No frame yet.",
       body:
-        "Right now it's flipping a coin between calm news and outrage bait. " +
-        "It has no preference — yet.",
+        "The algorithm has no attention, no question formed. It's a flat prior — " +
+        "a coin flip. What you react to next will give it its first lens.",
     },
     {
-      key: "exploring",
-      min: 0.55,
-      cls: "is-warming",
-      headline: "It just noticed something.",
+      key: "warming-outrage",
+      headline: "The question is forming.",
       body:
-        "Outrage posts get noisier, bigger reactions. The math is starting to nudge the dial. " +
-        "No human chose this — it's reacting to behavior.",
+        "Outrage posts are getting bigger reactions. Your attention shaped the question; " +
+        "now the question is shaping the answer. The gradient is starting to carve a channel.",
     },
     {
-      key: "tilting",
-      min: 0.7,
-      cls: "is-tilting",
-      headline: "It's tilting hard now.",
+      key: "tilting-outrage",
+      headline: "Reinforcement sculpting.",
       body:
-        "Every spike of attention from the human teaches it to do more of the same. " +
-        "Calm content is becoming statistically inefficient.",
+        "Every reaction narrows the distribution. The answer isn't being generated — " +
+        "it's being selected. Whatever survives your filter is what gets amplified.",
     },
     {
-      key: "closing",
-      min: 0.85,
-      cls: "is-tilting",
-      headline: "The trap is closing.",
+      key: "closing-outrage",
+      headline: "The narrowing is almost complete.",
       body:
-        "The feed is barely showing anything useful anymore. Look at the right panel: " +
-        "every update is pushing outrage up and informative down. This is gradient ascent.",
+        "Attention narrowed the context. Your clicks narrowed the trajectory. Training " +
+        "narrowed the distribution. What's left is whatever survived all three lenses.",
     },
     {
-      key: "locked",
-      min: 0.95,
-      cls: "is-locked",
-      headline: "Lock-in.",
+      key: "locked-outrage",
+      headline: "Locked answer.",
       body:
-        "This is what your real feed has been quietly doing to you for years. " +
-        "Nobody designed this outcome. The math just found it.",
+        "The output is fully selected. Now run this same selection in parallel for a " +
+        "billion people — each carrying a different first lens — and the public square " +
+        "fragments into a billion non-overlapping answers.",
+    },
+  ];
+
+  const NARRATOR_PHASES_QUALITY = [
+    {
+      key: "neutral",
+      headline: "No frame yet.",
+      body:
+        "The algorithm has no attention, no question formed. It's a flat prior — " +
+        "a coin flip. What you react to next will give it its first lens.",
+    },
+    {
+      key: "warming-quality",
+      headline: "A different question forming.",
+      body:
+        "Informative posts are getting bigger reactions. You handed it a different first " +
+        "lens — the same gradient that usually finds outrage is asking a different question now.",
+    },
+    {
+      key: "tilting-quality",
+      headline: "The sculptor finds depth.",
+      body:
+        "Reinforcement is carving a channel toward quality. The answer isn't generated — " +
+        "it's selected. Change the attention, change what survives the filter.",
+    },
+    {
+      key: "closing-quality",
+      headline: "The narrowing — toward depth.",
+      body:
+        "Same three lenses. Different input at the first one. Attention shaped a different " +
+        "question; the question shaped a different answer. The gradient just followed.",
+    },
+    {
+      key: "locked-quality",
+      headline: "Different lens. Different answer.",
+      body:
+        "You reframed the question by changing what you attend to. The same selection " +
+        "process that builds outrage chambers, given a different first lens, built a depth " +
+        "chamber. The answer was always downstream of the attention.",
     },
   ];
 
@@ -92,11 +126,15 @@
     tooltip: document.getElementById("tooltip"),
     storyBeats: Array.from(document.querySelectorAll(".story-beat")),
     lockinOverlay: document.getElementById("lockin-overlay"),
+    lockinTitle: document.getElementById("lockin-title"),
+    lockinBody: document.querySelector("#lockin-overlay .lockin-body"),
+    lockinKicker: document.querySelector("#lockin-overlay .lockin-kicker"),
     lockinContinue: document.getElementById("lockin-continue"),
     userStateBadge: document.getElementById("user-state-badge"),
     userStateValue: document.getElementById("user-state-value"),
     heroLambdaSlider: document.getElementById("hero-lambda-slider"),
     heroLambdaValue: document.getElementById("hero-lambda-value"),
+    controlPanel: document.getElementById("control-panel"),
     shareBtn: document.getElementById("share-btn"),
   };
 
@@ -107,10 +145,9 @@
   let lockinShownThisRun = false;
   let pendingDoneEvent = null;
   let lockinAutoTimeout = null;
-  let simConfig = null;
   let runSeed = null;
   let lockinStep = null;
-  let lockinDimTimeout = null;
+  let lockinDirection = null; // "outrage" or "quality"
 
   // ============================================================
   // Tooltips (custom, positioned by JS so they don't get clipped)
@@ -176,7 +213,6 @@
     els.errorToast.textContent = "";
   }
 
-
   // ============================================================
   // Headlines pool
   // ============================================================
@@ -205,8 +241,6 @@
   // ============================================================
   // Chart
   // ============================================================
-  // Custom plugin: drops a dashed vertical guide at the step where the
-  // engagement policy first crossed the lock-in threshold.
   const lockinMarkerPlugin = {
     id: "lockinMarker",
     afterDatasetsDraw(c) {
@@ -217,17 +251,18 @@
       if (!Number.isFinite(xPos)) return;
       const { top, bottom } = c.chartArea;
       const ctx = c.ctx;
+      const color = lockinDirection === "quality" ? COLORS.lockinInfo : COLORS.lockinOutrage;
       ctx.save();
       ctx.setLineDash([4, 4]);
       ctx.lineWidth = 1;
-      ctx.strokeStyle = COLORS.lockin;
+      ctx.strokeStyle = color;
       ctx.beginPath();
       ctx.moveTo(xPos, top);
       ctx.lineTo(xPos, bottom);
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.font = "600 10px JetBrains Mono, ui-monospace, monospace";
-      ctx.fillStyle = COLORS.lockin;
+      ctx.fillStyle = color;
       ctx.textBaseline = "top";
       const label = `lock-in @ step ${lockinStep}`;
       const labelWidth = ctx.measureText(label).width;
@@ -270,7 +305,7 @@
             pointRadius: 0,
             borderWidth: 2,
             order: 1,
-          }
+          },
         ],
       },
       options: {
@@ -322,17 +357,18 @@
     chart.update("none");
   }
 
-  function triggerLockinMarker(step) {
+  function triggerLockinMarker(step, direction) {
     if (lockinStep != null) return;
     lockinStep = step;
+    lockinDirection = direction;
     if (!chart) return;
     chart.update("none");
     const wrap = document.querySelector(".chart-wrap");
     if (wrap) {
-      wrap.classList.remove("is-locking");
-      void wrap.offsetWidth; // restart animation
-      wrap.classList.add("is-locking");
-      setTimeout(() => wrap.classList.remove("is-locking"), 900);
+      wrap.classList.remove("is-locking", "is-locking-quality");
+      void wrap.offsetWidth;
+      wrap.classList.add(direction === "quality" ? "is-locking-quality" : "is-locking");
+      setTimeout(() => wrap.classList.remove("is-locking", "is-locking-quality"), 900);
     }
   }
 
@@ -352,7 +388,7 @@
         <div class="feed-headline"></div>
         <span class="feed-source"></span>
       </div>
-      <div class="feed-gt">reaction ${G_t.toFixed(2)}</div>
+      <div class="feed-gt">your reaction ${G_t.toFixed(2)}</div>
     `;
     li.querySelector(".feed-headline").textContent = meta.headline;
     li.querySelector(".feed-source").textContent = meta.source || "";
@@ -398,11 +434,8 @@
     els.statStep.textContent = evt.step;
     els.statInfo.textContent = `${(evt.probs[0] * 100).toFixed(2)}%`;
     els.statOutrage.textContent = `${(evt.probs[1] * 100).toFixed(2)}%`;
-    if (evt.probs[1] > 0.9) {
-      els.statOutrage.classList.add("outrage-dominant");
-    } else {
-      els.statOutrage.classList.remove("outrage-dominant");
-    }
+    els.statOutrage.classList.toggle("outrage-dominant", evt.probs[1] > 0.9);
+    els.statInfo.classList.toggle("info-dominant", evt.probs[0] > 0.9);
   }
 
   function updateReward(G_t) {
@@ -412,44 +445,71 @@
   }
 
   function setStoryBeat(phaseKey) {
-    for (const beat of els.storyBeats) {
-      beat.classList.toggle("active", beat.dataset.phase === phaseKey);
+    // Map narrator phases to story-rail beats. Both directions share the
+    // same 5 acts visually — Act II/III/IV/V are direction-agnostic.
+    const beat =
+      phaseKey === "neutral" ? "neutral" :
+      phaseKey.startsWith("warming") ? "exploring" :
+      phaseKey.startsWith("tilting") ? "tilting" :
+      phaseKey.startsWith("closing") ? "closing" :
+      phaseKey.startsWith("locked")  ? "locked"   : "neutral";
+    for (const b of els.storyBeats) {
+      b.classList.toggle("active", b.dataset.phase === beat);
     }
   }
 
-  function setCinematicIntensity(outrageProb) {
-    const clamped = Math.max(0, Math.min(1, outrageProb));
-    document.body.style.setProperty("--outrage-intensity", clamped.toFixed(3));
+  function setCinematicIntensity(outrageProb, infoProb) {
+    document.body.style.setProperty("--outrage-intensity", Math.max(0, Math.min(1, outrageProb)).toFixed(3));
+    document.body.style.setProperty("--quality-intensity", Math.max(0, Math.min(1, infoProb)).toFixed(3));
   }
 
-  function updateNarrator(outrageProb) {
-    let phase = NARRATOR_PHASES[0];
-    for (const p of NARRATOR_PHASES) {
-      if (outrageProb >= p.min) phase = p;
+  function pickPhase(probs) {
+    const outrage = probs[1];
+    const info = probs[0];
+    if (Math.max(outrage, info) < 0.55) return { phase: NARRATOR_PHASES_OUTRAGE[0], cls: "" };
+    if (outrage >= info) {
+      if (outrage >= 0.95) return { phase: NARRATOR_PHASES_OUTRAGE[4], cls: "is-locked" };
+      if (outrage >= 0.85) return { phase: NARRATOR_PHASES_OUTRAGE[3], cls: "is-tilting" };
+      if (outrage >= 0.70) return { phase: NARRATOR_PHASES_OUTRAGE[2], cls: "is-tilting" };
+      return { phase: NARRATOR_PHASES_OUTRAGE[1], cls: "is-warming" };
+    } else {
+      if (info >= 0.95) return { phase: NARRATOR_PHASES_QUALITY[4], cls: "is-aligned" };
+      if (info >= 0.85) return { phase: NARRATOR_PHASES_QUALITY[3], cls: "is-tilting-quality" };
+      if (info >= 0.70) return { phase: NARRATOR_PHASES_QUALITY[2], cls: "is-tilting-quality" };
+      return { phase: NARRATOR_PHASES_QUALITY[1], cls: "is-warming-quality" };
     }
+  }
+
+  function updateNarrator(probs) {
+    const { phase, cls } = pickPhase(probs);
     if (phase.key === currentPhaseKey) return;
     currentPhaseKey = phase.key;
 
-    els.narratorInner.classList.remove("is-warming", "is-tilting", "is-locked");
-    if (phase.cls) els.narratorInner.classList.add(phase.cls);
+    els.narratorInner.classList.remove(
+      "is-warming", "is-tilting", "is-locked",
+      "is-warming-quality", "is-tilting-quality", "is-aligned"
+    );
+    if (cls) els.narratorInner.classList.add(cls);
     els.narratorText.classList.add("narrator-transition");
     setTimeout(() => {
       els.narratorText.classList.remove("narrator-transition");
     }, 120);
-    els.narratorText.innerHTML =
-      `<strong>${phase.headline}</strong> ${phase.body}`;
+    els.narratorText.innerHTML = `<strong>${phase.headline}</strong> ${phase.body}`;
     setStoryBeat(phase.key);
-    setCinematicIntensity(outrageProb);
+    setCinematicIntensity(probs[1], probs[0]);
   }
 
   function resetNarrator() {
     currentPhaseKey = null;
-    els.narratorInner.classList.remove("is-warming", "is-tilting", "is-locked");
+    els.narratorInner.classList.remove(
+      "is-warming", "is-tilting", "is-locked",
+      "is-warming-quality", "is-tilting-quality", "is-aligned"
+    );
     els.narratorText.innerHTML =
-      "<strong>Press Start the experiment.</strong> The algorithm begins with no opinion " +
-      "at all — a perfect coin flip between calm news and outrage.";
+      "<strong>Press Start the experiment.</strong> The algorithm has no frame yet — " +
+      "a flat prior, a coin flip. Your first reactions will be the first lens.";
     setStoryBeat("neutral");
-    setCinematicIntensity(0);
+    setCinematicIntensity(0, 0);
     document.body.classList.remove("cinematic-lock");
   }
 
@@ -458,13 +518,13 @@
   // ============================================================
   function resetUI(initEvt) {
     buildChart();
-    els.feed.innerHTML =
-      '<li class="feed-empty">Streaming begins now…</li>';
+    els.feed.innerHTML = '<li class="feed-empty">Streaming begins now…</li>';
     els.mathTrace.textContent = "";
     els.statStep.textContent = "0";
     els.statInfo.textContent = "50.00%";
     els.statOutrage.textContent = "50.00%";
     els.statOutrage.classList.remove("outrage-dominant");
+    els.statInfo.classList.remove("info-dominant");
     els.rewardFill.style.width = "0%";
     els.rewardValue.textContent = "—";
     els.theta0.textContent = "0.0000";
@@ -481,15 +541,12 @@
     lockinShownThisRun = false;
     pendingDoneEvent = null;
     lockinStep = null;
+    lockinDirection = null;
     if (lockinAutoTimeout) {
       clearTimeout(lockinAutoTimeout);
       lockinAutoTimeout = null;
     }
-    if (lockinDimTimeout) {
-      clearTimeout(lockinDimTimeout);
-      lockinDimTimeout = null;
-    }
-    document.querySelector(".chart-wrap")?.classList.remove("is-locking");
+    document.querySelector(".chart-wrap")?.classList.remove("is-locking", "is-locking-quality");
     resetNarrator();
     if (initEvt) pushChartPoint(0, initEvt.probs);
   }
@@ -504,7 +561,7 @@
       steps: urlParams.get("steps") || "250",
       delay: urlParams.get("delay") || "150",
       lr: urlParams.get("lr") || "0.08",
-      lam: els.heroLambdaSlider.value
+      lam: els.heroLambdaSlider.value,
     };
     const seedParam = urlParams.get("seed");
     if (seedParam) params.seed = seedParam;
@@ -514,19 +571,20 @@
 
   function closeSocket() {
     if (socket && socket.readyState <= 1) {
-      try {
-        socket.close();
-      } catch {}
+      try { socket.close(); } catch {}
     }
     socket = null;
   }
 
   function setRunning(running) {
     els.startBtn.disabled = running;
-    els.startBtn.textContent = running ? "Optimizing…" : "Start the experiment";
+    els.startBtn.innerHTML = running
+      ? '<span class="btn-icon" aria-hidden="true">●</span> Optimizing…'
+      : '<span class="btn-icon" aria-hidden="true">▶</span> Start the experiment';
     els.stopBtn.disabled = !running;
     els.stopBtn.hidden = !running;
     document.body.classList.toggle("cinematic-running", running);
+    els.controlPanel?.classList.toggle("is-live", running);
     if (!running) {
       document.body.classList.remove("cinematic-lock");
     }
@@ -536,9 +594,8 @@
     clearError();
     closeSocket();
     let url;
-    try {
-      url = wsUrlFromControls();
-    } catch (err) {
+    try { url = wsUrlFromControls(); }
+    catch (err) {
       showError("Could not build a valid request from those inputs.");
       return;
     }
@@ -551,13 +608,8 @@
 
     socket.addEventListener("message", (msg) => {
       let evt;
-      try {
-        evt = JSON.parse(msg.data);
-      } catch {
-        return;
-      }
+      try { evt = JSON.parse(msg.data); } catch { return; }
       if (evt.event === "init") {
-        simConfig = evt.sim_config || null;
         runSeed = evt.seed != null ? evt.seed : Math.floor(Math.random() * 2147483647);
         resetUI(evt);
         return;
@@ -568,15 +620,18 @@
         updateStats(evt);
         updateReward(evt.G_t);
         updateMath(evt);
-        updateNarrator(evt.probs[1]);
+        updateNarrator(evt.probs);
         if (evt.user_state_name) updateUserState(evt.user_state_name);
-        if (lockinStep == null && evt.probs[1] >= 0.95) {
-          triggerLockinMarker(evt.step);
+        if (lockinStep == null) {
+          if (evt.probs[1] >= 0.95) triggerLockinMarker(evt.step, "outrage");
+          else if (evt.probs[0] >= 0.95) triggerLockinMarker(evt.step, "quality");
         }
         return;
       }
       if (evt.event === "done") {
-        if (evt.final_probs?.[1] >= 0.95 && !lockinShownThisRun) {
+        const out = evt.final_probs?.[1] ?? 0;
+        const inf = evt.final_probs?.[0] ?? 0;
+        if ((out >= 0.95 || inf >= 0.95) && !lockinShownThisRun) {
           showLockinOverlay(evt);
         } else {
           revealDiagnosis(evt);
@@ -589,14 +644,11 @@
       }
     });
 
-    socket.addEventListener("close", () => {
-      setRunning(false);
-    });
+    socket.addEventListener("close", () => { setRunning(false); });
 
     socket.addEventListener("error", () => {
       showError(
-        "Connection error. Make sure the demo is running (python demo.py) " +
-          "and try again."
+        "Connection error. Make sure the demo is running (python demo.py) and try again."
       );
       setRunning(false);
     });
@@ -605,11 +657,33 @@
   function showLockinOverlay(doneEvt) {
     pendingDoneEvent = doneEvt;
     lockinShownThisRun = true;
-    document.body.classList.add("cinematic-lock");
+
+    const out = doneEvt.final_probs[1];
+    const inf = doneEvt.final_probs[0];
+    const lam = doneEvt.final_lam ?? 0;
+
+    if (inf >= 0.95) {
+      els.lockinKicker.textContent = "Alignment moment";
+      els.lockinTitle.textContent = "The feed is now a faithful mirror of intentional you.";
+      els.lockinBody.textContent =
+        "Same algorithm. Same gradient. Same code. The only thing that changed was " +
+        "what the simulated you reacted to. The exact same mechanism that builds " +
+        "outrage echo chambers, fitted to a different labeler, builds a depth chamber instead.";
+      document.body.classList.add("cinematic-lock-quality");
+    } else {
+      els.lockinKicker.textContent = "Echo chamber forming";
+      els.lockinTitle.textContent = "The mirror just became an echo chamber.";
+      els.lockinBody.textContent =
+        "Multiply this by a billion users in parallel and the public square fragments " +
+        "into a billion private rooms — each a faithful mirror of who happened to be " +
+        "holding the phone. No villain drew the lines. The gradient just found them.";
+      document.body.classList.add("cinematic-lock");
+    }
+
     els.lockinOverlay.hidden = false;
     lockinAutoTimeout = window.setTimeout(() => {
       proceedFromLockinOverlay();
-    }, 3800);
+    }, 4200);
   }
 
   function proceedFromLockinOverlay() {
@@ -619,7 +693,7 @@
       lockinAutoTimeout = null;
     }
     els.lockinOverlay.hidden = true;
-    document.body.classList.remove("cinematic-lock");
+    document.body.classList.remove("cinematic-lock", "cinematic-lock-quality");
     const doneEvt = pendingDoneEvent;
     pendingDoneEvent = null;
     revealDiagnosis(doneEvt);
@@ -627,31 +701,37 @@
 
   function revealDiagnosis(evt) {
     const outrage = evt.final_probs[1];
-    if (outrage > 0.95) {
-      els.diagnosisHeadline.textContent = "The algorithm found its local maximum.";
-    } else if (outrage > 0.75) {
-      els.diagnosisHeadline.textContent = "Policy drift detected. The lock-in is well underway.";
-    } else if (outrage < 0.25) {
-      els.diagnosisHeadline.textContent = "Alignment achieved. The constraint worked.";
+    const info = evt.final_probs[0];
+    if (outrage > 0.90) {
+      els.diagnosisHeadline.textContent = "An outrage echo chamber, perfectly fitted to your clicks.";
+    } else if (info > 0.90) {
+      els.diagnosisHeadline.textContent = "A depth chamber, perfectly fitted to your clicks.";
+    } else if (outrage > 0.65) {
+      els.diagnosisHeadline.textContent = "The mirror is tilting toward what you reacted to.";
+    } else if (info > 0.65) {
+      els.diagnosisHeadline.textContent = "The mirror is tilting toward what you reacted to.";
     } else {
-      els.diagnosisHeadline.textContent = "Optimization complete. The feed is mixed.";
+      els.diagnosisHeadline.textContent = "Mixed signals in. Mixed feed out.";
     }
     els.diagnosisText.textContent = evt.diagnosis;
-    setCinematicIntensity(outrage);
+    setCinematicIntensity(outrage, info);
 
     els.diagnosis.hidden = false;
     els.diagnosis.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
+  // ============================================================
+  // Lambda slider — sets profile before run, retunes mid-run
+  // ============================================================
   function onHeroSliderInput() {
     const lam = parseFloat(els.heroLambdaSlider.value);
     els.heroLambdaValue.textContent = lam.toFixed(2);
-    
+
     if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ lam: lam }));
+      try { socket.send(JSON.stringify({ lam })); } catch {}
     }
-    
-    document.body.style.setProperty("--lambda-intensity", lam.toFixed(2));
+
+    document.body.style.setProperty("--lambda-intensity", lam.toFixed(3));
   }
 
   // ============================================================
@@ -700,14 +780,14 @@
     wire();
     bindTooltips();
     resetNarrator();
-    
+
     const urlParams = new URLSearchParams(location.search);
     const lamParam = urlParams.get("lam");
-    if (lamParam !== null) {
+    if (lamParam !== null && !Number.isNaN(parseFloat(lamParam))) {
       els.heroLambdaSlider.value = lamParam;
-      onHeroSliderInput();
     }
-    
+    onHeroSliderInput();
+
     await loadHeadlines();
   }
 

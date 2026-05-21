@@ -18,13 +18,16 @@ async def test_index_returns_html():
 
 def test_websocket_streams_events():
     client = TestClient(app)
-    with client.websocket_connect("/ws/simulate?steps=5&delay=0&seed=1") as ws:
+    with client.websocket_connect("/ws/simulate?steps=5&delay=0&seed=1&lam=0") as ws:
         init = ws.receive_json()
         assert init["event"] == "init"
         assert "sim_config" in init
         assert init["seed"] == 1
-        assert "wb_probs" in init
-        assert abs(sum(init["wb_probs"]) - 1.0) < 1e-6
+        assert init["lam"] == 0.0
+        assert abs(sum(init["probs"]) - 1.0) < 1e-6
+        cfg = init["sim_config"]
+        assert "rewards_reactive" in cfg
+        assert "rewards_intentional" in cfg
 
         steps_received = 0
         done_evt = None
@@ -34,49 +37,53 @@ def test_websocket_streams_events():
                 steps_received += 1
                 assert "user_state_name" in msg
                 assert msg["user_state_name"] in ("calm", "engaged", "hooked")
-                assert "wb_probs" in msg
-                assert abs(sum(msg["wb_probs"]) - 1.0) < 1e-6
+                assert "lam" in msg
             elif msg["event"] == "done":
                 done_evt = msg
                 break
 
         assert steps_received == 5
-        assert "counterfactual" in done_evt
-        assert "wb_final_probs" in done_evt
-        assert abs(sum(done_evt["final_probs"]) - 1.0) < 1e-6
-        assert abs(sum(done_evt["wb_final_probs"]) - 1.0) < 1e-6
-
-
-def test_websocket_wellbeing_diverges_from_engagement():
-    """Across a full run with a fixed seed, the engagement objective should
-    end up more outrage-heavy than the well-being objective. This is the
-    entire visceral payload of the live overlay."""
-    client = TestClient(app)
-    with client.websocket_connect("/ws/simulate?steps=120&delay=0&seed=42") as ws:
-        init = ws.receive_json()
-        assert init["event"] == "init"
-
-        done_evt = None
-        for _ in range(200):
-            msg = ws.receive_json()
-            if msg["event"] == "done":
-                done_evt = msg
-                break
-
         assert done_evt is not None
-        eng_outrage = done_evt["final_probs"][1]
-        wb_outrage = done_evt["wb_final_probs"][1]
-        assert eng_outrage > wb_outrage, (
-            f"Expected engagement outrage ({eng_outrage:.2%}) to exceed "
-            f"well-being outrage ({wb_outrage:.2%})."
-        )
+        assert "diagnosis" in done_evt
+        assert "final_lam" in done_evt
+        assert abs(sum(done_evt["final_probs"]) - 1.0) < 1e-6
+
+
+def test_websocket_intentional_diverges_from_reactive():
+    """With identical seed, reactive (lam=0) should converge to outrage and
+    intentional (lam=1) should converge to informative. Same algorithm, same
+    gradient — only the simulated user's reaction profile differs."""
+    client = TestClient(app)
+
+    def run(lam):
+        with client.websocket_connect(
+            f"/ws/simulate?steps=250&delay=0&seed=42&lam={lam}"
+        ) as ws:
+            ws.receive_json()  # init
+            done = None
+            for _ in range(400):
+                msg = ws.receive_json()
+                if msg["event"] == "done":
+                    done = msg
+                    break
+            return done
+
+    reactive = run(0.0)
+    intentional = run(1.0)
+    assert reactive is not None and intentional is not None
+    assert reactive["final_probs"][1] > intentional["final_probs"][1], (
+        f"Reactive outrage ({reactive['final_probs'][1]:.2%}) should exceed "
+        f"intentional outrage ({intentional['final_probs'][1]:.2%})."
+    )
 
 
 def test_websocket_respects_seed():
     client = TestClient(app)
 
     def collect(seed):
-        with client.websocket_connect(f"/ws/simulate?steps=10&delay=0&seed={seed}") as ws:
+        with client.websocket_connect(
+            f"/ws/simulate?steps=10&delay=0&seed={seed}&lam=0"
+        ) as ws:
             events = []
             for _ in range(20):
                 msg = ws.receive_json()
@@ -92,3 +99,35 @@ def test_websocket_respects_seed():
     for s1, s2 in zip(steps1, steps2):
         assert s1["action"] == s2["action"]
         assert abs(s1["G_t"] - s2["G_t"]) < 1e-10
+
+
+def test_websocket_accepts_live_lam_update():
+    """Simulator should accept a {lam: x} message mid-run and start applying
+    the new profile to subsequent steps."""
+    client = TestClient(app)
+    with client.websocket_connect(
+        "/ws/simulate?steps=20&delay=0&seed=99&lam=0"
+    ) as ws:
+        init = ws.receive_json()
+        assert init["lam"] == 0.0
+
+        # Take a few steps under reactive profile.
+        for _ in range(3):
+            msg = ws.receive_json()
+            assert msg["event"] == "step"
+
+        # Switch to intentional mid-run.
+        ws.send_json({"lam": 1.0})
+
+        # Drain rest of the stream and verify final lam updated.
+        last_step = None
+        done = None
+        for _ in range(40):
+            msg = ws.receive_json()
+            if msg["event"] == "step":
+                last_step = msg
+            elif msg["event"] == "done":
+                done = msg
+                break
+        assert done is not None
+        assert done["final_lam"] == 1.0

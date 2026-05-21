@@ -36,11 +36,11 @@
 
   <!-- headline -->
   <text x="80" y="220" fill="#e6edf3" font-size="76" font-weight="700" letter-spacing="-2">Your feed isn't evil.</text>
-  <text x="80" y="306" fill="url(#title)" font-size="76" font-weight="700" letter-spacing="-2">It just descended a gradient.</text>
+  <text x="80" y="306" fill="url(#title)" font-size="76" font-weight="700" letter-spacing="-2">It's a mirror of you.</text>
 
   <!-- subtitle -->
-  <text x="80" y="370" fill="#8b949e" font-size="24" font-weight="400">Watch a neutral algorithm learn to feed you outrage in real time.</text>
-  <text x="80" y="402" fill="#8b949e" font-size="24" font-weight="400">No villain required &#x2014; just math.</text>
+  <text x="80" y="370" fill="#8b949e" font-size="24" font-weight="400">The algorithm only counts your clicks. Live REINFORCE simulation.</text>
+  <text x="80" y="402" fill="#8b949e" font-size="24" font-weight="400">Tune your engagement profile and watch the same gradient flip.</text>
 
   <!-- sparkline frame -->
   <rect x="80" y="455" width="1040" height="120" rx="10" fill="#0d1117" stroke="#1f2632" stroke-width="1"/>

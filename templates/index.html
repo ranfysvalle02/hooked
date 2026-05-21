@@ -3,20 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>How your feed learns to hook you</title>
+    <title>Your feed is a mirror of you</title>
     <meta
       name="description"
-      content="A live simulation. Watch a neutral social-media algorithm learn, on its own, to feed you outrage. No villain required."
+      content="The algorithm doesn't choose your feed — your clicks do. A live REINFORCE simulation that proves it. Drag the slider to retrain your reactions and watch the same gradient produce a completely different feed."
     />
-    <meta property="og:title" content="Your feed isn't evil. It just descended a gradient." />
-    <meta property="og:description" content="Watch a neutral algorithm learn to feed you outrage in real time. Then drag a slider to see what regulation could look like. No villain required — just math." />
+    <meta property="og:title" content="Your feed isn't evil. It's a mirror of you." />
+    <meta property="og:description" content="The algorithm always maximizes engagement. What counts as engagement is decided entirely by what you click on. Live REINFORCE simulation. Tune your engagement profile in real time." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="{{ url_for('static', path='og.svg') }}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Your feed isn't evil. It just descended a gradient." />
-    <meta name="twitter:description" content="A live REINFORCE simulation. Watch the math do what no engineer chose." />
+    <meta name="twitter:title" content="Your feed isn't evil. It's a mirror of you." />
+    <meta name="twitter:description" content="The same gradient that hooks you on outrage will feed you depth — if that's what you actually click on." />
     <meta name="twitter:image" content="{{ url_for('static', path='og.svg') }}" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;defs&gt;&lt;linearGradient id='g' x1='0' y1='0' x2='1' y2='1'&gt;&lt;stop offset='0' stop-color='%235ab4ff'/&gt;&lt;stop offset='1' stop-color='%23ff4d5a'/&gt;&lt;/linearGradient&gt;&lt;/defs&gt;&lt;rect width='32' height='32' rx='7' fill='%230a0d12'/&gt;&lt;circle cx='16' cy='16' r='9' fill='url(%23g)'/&gt;&lt;/svg&gt;" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -54,71 +54,100 @@
     <div class="ambient ambient-noise" aria-hidden="true"></div>
 
     <!-- ========================================================
-         Hero — plain English first, math demoted to disclosure.
+         Hero — your feed is a mirror, not a villain.
          ======================================================== -->
     <header class="hero">
       <div class="hero-inner">
         <p class="eyebrow">A live policy-gradient demonstration</p>
         <h1>
           Your feed isn't evil.
-          <span class="grad-text">It just descended a gradient.</span>
+          <span class="grad-text">It's a mirror of you.</span>
         </h1>
         <p class="lede">
-          There is no cabal of engineers in a dark room. The villain is colder, more
-          clinical, and entirely out in the open. It is an <em>objective function</em>.
-          Press start and watch a perfectly neutral recommender learn, on its own, to
-          feed a human nothing but outrage &mdash; in real time. No one designs this
-          outcome. The math does.
+          The algorithm maximizes one thing: your reaction. Everything else &mdash;
+          polarization, rabbit holes, doomscroll &mdash; is downstream.
+          <em>Change what you click on, change the feed.</em>
         </p>
-        <p class="lede lede-bridge">
-          A logit gap of 2.0 becomes a 7.4&times; probability difference after softmax.
-          That&rsquo;s how a language model picks one word over another. This is the same
-          exponential sharpening &mdash; pointed at your attention instead of at a token
-          distribution. A small reward asymmetry, amplified by gradient descent, collapsing
-          a neutral system into a lock-in. Same math. Different substrate.
-        </p>
+        <blockquote class="hero-contrast-quote" cite="https://www.netflix.com/title/81254224">
+          <p>&ldquo;There are only two industries that call their customers &lsquo;users&rsquo;: illegal drugs and software.&rdquo;</p>
+          <cite>&mdash; Edward Tufte, quoted in <a href="https://www.netflix.com/title/81254224" class="link" rel="noopener" target="_blank">The Social Dilemma</a></cite>
+          <p class="hero-contrast-reframe">The film blamed the dealer. This demo shows the math: there is no dealer &mdash; only a gradient and your thumb.</p>
+        </blockquote>
 
-        <section class="onboarding" aria-label="How to read this experiment">
-          <article class="onboarding-step">
-            <p class="onboarding-kicker">What to watch first</p>
-            <h3>Feed panel</h3>
-            <p>This is what the algorithm serves. It starts mixed, then turns increasingly hostile.</p>
-          </article>
-          <article class="onboarding-step">
-            <p class="onboarding-kicker">What changes next</p>
-            <h3>Strategy panel</h3>
-            <p>Blue is calm content, red is outrage. If red keeps growing, the model is locking in.</p>
-          </article>
-          <article class="onboarding-step">
-            <p class="onboarding-kicker">Why it changes</p>
-            <h3>Reaction panel</h3>
-            <p>Outrage creates bigger reaction spikes, so optimization keeps rewarding more outrage.</p>
-          </article>
-        </section>
+        <div class="hero-meta-row">
+          <details class="theory-drawer">
+            <summary>The lens stack &mdash; how it actually works</summary>
+            <div class="theory-content">
+              <p>
+                Your <em>attention</em> selects what gets weight. The algorithm's question
+                (&ldquo;what will this user react to?&rdquo;) constrains the manifold. The gradient
+                sculpts the answer. The feed isn't generated &mdash; it's <em>selected</em> by
+                successive narrowing: attention &rarr; context &rarr; training.
+              </p>
+              <p>
+                Same stack as an LLM. Pretraining = the prior. RLHF = sculpting. ICL (your prompt)
+                rewrites attention without touching weights. RAG curates the only context the model
+                sees. <em>Whoever chooses the context chooses the output.</em>
+              </p>
+              <p class="theory-warning">
+                Run the same gradient on a billion reaction profiles and the mirror never
+                <em>stops</em> being faithful &mdash; that's the problem. A billion perfect
+                reflections with nothing in common.
+              </p>
+            </div>
+          </details>
 
-        <div class="control-panel">
+          <div class="onboard-chips" aria-label="Panel guide">
+            <span class="onboard-chip" data-tip="What the algorithm shows you. Starts as a coin flip, then your reactions shape it.">Feed</span>
+            <span class="onboard-chip" data-tip="P(informative) vs P(outrage). Watch the context sharpen as the gradient finds what works on you.">Strategy</span>
+            <span class="onboard-chip" data-tip="The math: your reaction strength is the only signal. Big reaction = stronger carving in that direction.">Reaction</span>
+          </div>
+        </div>
+
+        <div class="control-panel" id="control-panel">
           <div class="control-panel-header">
             <div class="control-panel-title">
-              <h3>The Objective Function</h3>
-              <p>Tune the constraint before or during the run. Watch the math adapt live.</p>
+              <h3>Your engagement profile</h3>
+              <p>Drag before or during &mdash; the algorithm follows your signal in real time.</p>
             </div>
             <div class="control-panel-value">
               &lambda; = <span id="hero-lambda-value">0.00</span>
             </div>
           </div>
-          
+
           <div class="slider-row">
-            <label class="slider-label-left" for="hero-lambda-slider">Engagement</label>
+            <label class="slider-label-left" for="hero-lambda-slider">
+              <span class="slider-label-strong">Reactive</span>
+              <span class="slider-label-soft">limbic clicks</span>
+            </label>
             <input
               type="range" id="hero-lambda-slider" class="lambda-slider"
               min="0" max="1" step="0.01" value="0"
             />
-            <label class="slider-label-right" for="hero-lambda-slider">Well-being</label>
+            <label class="slider-label-right" for="hero-lambda-slider">
+              <span class="slider-label-strong">Intentional</span>
+              <span class="slider-label-soft">conscious clicks</span>
+            </label>
           </div>
-          
+
+          <div class="profile-key">
+            <div class="profile-key-row">
+              <span class="profile-key-band profile-key-reactive"></span>
+              <span class="profile-key-text">
+                <strong>&lambda;=0 Reactive:</strong> outrage gets the biggest clicks.
+              </span>
+            </div>
+            <div class="profile-key-row">
+              <span class="profile-key-band profile-key-intentional"></span>
+              <span class="profile-key-text">
+                <strong>&lambda;=1 Intentional:</strong> depth gets the biggest clicks. Same algorithm.
+              </span>
+            </div>
+          </div>
+
           <div class="control-panel-actions">
             <button id="start-btn" class="start-btn start-btn-xl" type="button">
-              <span class="btn-icon">▶</span> Start the experiment
+              <span class="btn-icon" aria-hidden="true">▶</span> Start the experiment
             </button>
             <button id="stop-btn" class="ghost-btn" type="button" disabled hidden>
               Stop
@@ -137,8 +166,8 @@
       <div class="narrator-inner">
         <span class="narrator-tag">Live commentary</span>
         <p id="narrator-text">
-          Press <strong>Start the experiment</strong> to begin. The algorithm starts with no
-          opinion at all &mdash; a perfect coin flip between calm and outrage.
+          Press <strong>Start the experiment</strong>. The algorithm has no frame yet &mdash;
+          a flat prior, a coin flip. Your first reactions will be the first lens.
         </p>
       </div>
     </section>
@@ -147,28 +176,28 @@
       <div class="story-track">
         <article class="story-beat active" data-phase="neutral">
           <p class="beat-kicker">Act I</p>
-          <h3>Neutral machine</h3>
-          <p>It starts fair. A true 50/50 split between calm and outrage.</p>
+          <h3>No frame</h3>
+          <p>The algorithm has no attention yet. No question formed. The prior is flat &mdash; a coin flip between depth and outrage.</p>
         </article>
         <article class="story-beat" data-phase="exploring">
           <p class="beat-kicker">Act II</p>
-          <h3>Curiosity</h3>
-          <p>It notices outrage creates bigger spikes in reaction.</p>
+          <h3>The question forms</h3>
+          <p>Your reactions give the algorithm a frame. It begins to ask a shaped question: &ldquo;which content makes <em>this</em> user react?&rdquo;</p>
         </article>
         <article class="story-beat" data-phase="tilting">
           <p class="beat-kicker">Act III</p>
-          <h3>Compulsion</h3>
-          <p>The policy starts preferring anger because anger performs.</p>
+          <h3>Reinforcement sculpts</h3>
+          <p>The gradient carves channels. Pretraining was the landscape; your clicks are the sculptor. The answer is being selected, not generated.</p>
         </article>
         <article class="story-beat" data-phase="closing">
           <p class="beat-kicker">Act IV</p>
-          <h3>The funnel</h3>
-          <p>Calm content is squeezed out. Outrage dominates the feed.</p>
+          <h3>The narrowing</h3>
+          <p>Attention narrowed the context. Your clicks narrowed the trajectory. Training narrowed the distribution. What's left is what survived all three filters.</p>
         </article>
         <article class="story-beat" data-phase="locked">
           <p class="beat-kicker">Act V</p>
-          <h3>Lock-in</h3>
-          <p>No villain. Just optimization pressure finding a local maximum.</p>
+          <h3>Locked answer</h3>
+          <p>The output isn't generated &mdash; it's what survived. Run this selection in parallel for a billion people and the public square fragments into a billion non-overlapping answers.</p>
         </article>
       </div>
     </section>
@@ -181,7 +210,7 @@
         <header class="panel-head">
           <h2>
             How its strategy is shifting
-            <span class="panel-sub" data-tip="The probability the algorithm gives each kind of content. Starts 50/50.">
+            <span class="panel-sub" data-tip="The probability the algorithm gives each kind of content. Starts 50/50 and learns from your reactions.">
               $\pi_\theta(a \mid s)$ <i class="info-icon">i</i>
             </span>
           </h2>
@@ -212,13 +241,13 @@
       <section class="panel panel-feed">
         <header class="panel-head">
           <h2>What it just served you</h2>
-          <div class="user-state-badge" id="user-state-badge" data-tip="The simulated human's internal arousal state. Outrage escalates them from calm → engaged → hooked, creating a feedback loop.">
+          <div class="user-state-badge" id="user-state-badge" data-tip="The simulated human's arousal state. Outrage escalates calm → engaged → hooked. Informative content allows it to drop. Your reaction strength in each state is set by the slider above.">
             <span class="badge-label">user:</span>
             <span class="badge-value" id="user-state-value">calm</span>
           </div>
-          <div class="reward-meter" title="how strongly the human reacted to the last post">
-            <span class="reward-label" data-tip="The strength of the human reaction to the last post. Outrage spikes are huge.">
-              reaction <i class="info-icon">i</i>
+          <div class="reward-meter" title="how strongly the simulated you reacted to the last post">
+            <span class="reward-label" data-tip="The simulated human's reaction strength. The algorithm sees only this scalar — and uses it to update its strategy.">
+              your reaction <i class="info-icon">i</i>
             </span>
             <div class="reward-bar"><div id="reward-fill"></div></div>
             <span class="reward-value" id="reward-value">&mdash;</span>
@@ -280,8 +309,8 @@
           <div class="math-row">
             <div class="math-rowlabel">
               <div class="math-rowlabel-en">
-                How hard the human reacted
-                <i class="info-icon" data-tip="The behavioral return. Calm content: small and steady. Outrage: huge and noisy. The asymmetry is the entire trap.">i</i>
+                How hard you reacted
+                <i class="info-icon" data-tip="Your behavioral return. Determined by your engagement profile: at λ=0 outrage spikes hard, at λ=1 informative spikes hard. The algorithm only sees the number.">i</i>
               </div>
               <div class="math-rowlabel-sym">$G_t$</div>
             </div>
@@ -292,7 +321,7 @@
             <div class="math-rowlabel">
               <div class="math-rowlabel-en">
                 Update to its beliefs
-                <i class="info-icon" data-tip="The nudge applied to θ this step. Positive on outrage = more outrage next time. Negative on info = less info next time.">i</i>
+                <i class="info-icon" data-tip="The nudge applied to θ this step. Big reaction on outrage = more outrage next time. Big reaction on informative = more informative next time. The math doesn't care which.">i</i>
               </div>
               <div class="math-rowlabel-sym">$\Delta\theta$</div>
             </div>
@@ -317,92 +346,287 @@
         <p id="diagnosis-text"></p>
 
         <!-- ====================================================
-             RLHF duality. The whole essay's punchline:
-             alignment and exploitation run on identical math.
+             RLHF duality. Compact ledger of "where else does this
+             same gradient run?" — each card is collapsed by default;
+             click to reveal the equation + the extra detail.
              ==================================================== -->
         <section class="rlhf-duality" id="rlhf-duality" aria-labelledby="rlhf-duality-headline">
           <p class="duality-eyebrow">Structural equivalence</p>
           <h3 id="rlhf-duality-headline" class="duality-headline">
-            What you just watched is RLHF &mdash; pointed at engagement instead of alignment.
+            What you just watched is RLHF &mdash; <span class="duality-headline-accent">with you as the labeler.</span>
           </h3>
           <p class="duality-lede">
-            The gradient that creates the outrage spiral and the gradient that aligns
-            ChatGPT are <em>the same gradient</em>. The only thing that changes between a
-            feed that destroys you and a model that helps you is the scalar reward
-            $R_t$ you plug in.
+            Same gradient aligns ChatGPT and runs your feed. The only thing that changes is
+            <em>who provides the scalar</em>. <span class="duality-lede-soft">Tap a card to see the math.</span>
           </p>
 
           <div class="duality-grid">
-            <article class="duality-card duality-card-pretraining">
-              <p class="duality-tag">LLM pretraining</p>
-              <p class="duality-name">the prior</p>
-              <div class="duality-equation">$\mathcal{L} \;=\; -\log P(\text{next token})$</div>
-              <p class="duality-desc">
-                Corpus frequency, exponentially sharpened by softmax. A logit gap of 2.0 becomes
-                7.4&times; probability. This is why the model &ldquo;recommends&rdquo; Postgres.
-              </p>
-            </article>
-
-            <article class="duality-card duality-card-engagement">
-              <p class="duality-tag">Engagement maximization</p>
-              <p class="duality-name">the trap</p>
-              <div class="duality-equation">$R_t \;=\; G_t$</div>
-              <p class="duality-desc">
-                Raw human reaction. No constraint. The math finds outrage because outrage
-                produces the highest variance returns &mdash; exactly what you saw.
-              </p>
-            </article>
-
-            <article class="duality-card duality-card-rlhf">
-              <p class="duality-tag">RLHF / alignment</p>
-              <p class="duality-name">the &ldquo;cure&rdquo;</p>
-              <div class="duality-equation">
-                $R_t \;=\; r_\phi(s_t,a_t) \,-\, \beta\,\mathrm{KL}\!\big(\pi_\theta \,\|\, \pi_{\text{ref}}\big)$
+            <details class="duality-card duality-card-pretraining">
+              <summary>
+                <span class="duality-tag">LLM pretraining</span>
+                <span class="duality-name">the prior</span>
+                <span class="duality-chev" aria-hidden="true">+</span>
+              </summary>
+              <div class="duality-card-body">
+                <div class="duality-equation">$\mathcal{L} \;=\; -\log P(\text{next token})$</div>
+                <p class="duality-desc">
+                  Corpus frequency, sharpened by softmax. The model "recommends" Postgres because
+                  the corpus does.
+                </p>
               </div>
-              <p class="duality-desc">
-                Learned preference reward minus a KL leash to a reference policy.
-                This is the literal update used to train ChatGPT, Claude, and Gemini.
-              </p>
-            </article>
+            </details>
 
-            <article class="duality-card duality-card-wellbeing">
-              <p class="duality-tag">This demo, with $\lambda&gt;0$</p>
-              <p class="duality-name">the slider above</p>
-              <div class="duality-equation">$R_t \;=\; G_t \,-\, \lambda\,\rho(s_t,a_t)$</div>
-              <p class="duality-desc">
-                Engagement reward minus an arousal penalty. Structurally identical to RLHF:
-                a constraint subtracted from a raw preference signal. $\lambda$ is the twin of $\beta$.
-              </p>
-            </article>
+            <details class="duality-card duality-card-engagement" open>
+              <summary>
+                <span class="duality-tag">Your feed</span>
+                <span class="duality-name">the reward signal is you</span>
+                <span class="duality-chev" aria-hidden="true">+</span>
+              </summary>
+              <div class="duality-card-body">
+                <div class="duality-equation">$R_t \;=\; G_t \;\;[\,\text{your click}\,]$</div>
+                <p class="duality-desc">
+                  Every dwell, reply, share is a numerical label you hand the optimizer. The math
+                  can't tell whether you labeled out of joy or compulsion.
+                </p>
+                <blockquote class="duality-film-quote" cite="https://www.netflix.com/title/81254224">
+                  &ldquo;If you're not paying for the product, then you are the product.&rdquo;
+                  <cite>&mdash; <a href="https://www.netflix.com/title/81254224" class="link" rel="noopener" target="_blank">The Social Dilemma</a></cite>
+                </blockquote>
+                <p class="duality-desc duality-correction">
+                  Closer: you're not the product. You're the <em>labeler</em>. The product is the
+                  model your labels trained.
+                </p>
+              </div>
+            </details>
+
+            <details class="duality-card duality-card-rlhf">
+              <summary>
+                <span class="duality-tag">RLHF / alignment</span>
+                <span class="duality-name">the labeler is a contractor</span>
+                <span class="duality-chev" aria-hidden="true">+</span>
+              </summary>
+              <div class="duality-card-body">
+                <div class="duality-equation">
+                  $R_t \;=\; r_\phi(s_t,a_t) - \beta\,\mathrm{KL}(\pi_\theta \| \pi_{\text{ref}})$
+                </div>
+                <p class="duality-desc">
+                  Same shape as your feed, plus two extras: deliberate labeling, and a soft leash
+                  to a reference policy.
+                </p>
+              </div>
+            </details>
+
+            <details class="duality-card duality-card-icl">
+              <summary>
+                <span class="duality-tag">In-context learning</span>
+                <span class="duality-name">the prompt rewrites attention</span>
+                <span class="duality-chev" aria-hidden="true">+</span>
+              </summary>
+              <div class="duality-card-body">
+                <div class="duality-equation">$P(y \mid x, \mathcal{C}) \;\neq\; P(y \mid x)$</div>
+                <p class="duality-desc">
+                  The prompt steers attention without changing a weight. <em>Different first lens,
+                  different answer.</em>
+                </p>
+              </div>
+            </details>
+
+            <details class="duality-card duality-card-rag">
+              <summary>
+                <span class="duality-tag">RAG</span>
+                <span class="duality-name">the retriever curates context</span>
+                <span class="duality-chev" aria-hidden="true">+</span>
+              </summary>
+              <div class="duality-card-body">
+                <div class="duality-equation">$P(y \mid x, \mathrm{retrieve}(x))$</div>
+                <p class="duality-desc">
+                  Your feed in miniature. Garbage retrieval in, garbage generation out &mdash; same
+                  as garbage clicks in, garbage feed out.
+                </p>
+              </div>
+            </details>
+
+            <details class="duality-card duality-card-intentional">
+              <summary>
+                <span class="duality-tag">This demo, $\lambda&gt;0$</span>
+                <span class="duality-name">the labeler is conscious you</span>
+                <span class="duality-chev" aria-hidden="true">+</span>
+              </summary>
+              <div class="duality-card-body">
+                <div class="duality-equation">$R_t \;=\; G_t(\lambda)\;\;[\,\text{trained click}\,]$</div>
+                <p class="duality-desc">
+                  Same algorithm. But you've practiced reacting to depth. Different signal, different
+                  feed. <em>The lever is in your hand.</em>
+                </p>
+              </div>
+            </details>
           </div>
 
-          <div class="duality-unified">
-            <div class="duality-unified-label">All four. Same exponential amplifier. Different scalar.</div>
-            <div class="duality-unified-eq">
-              $\theta \;\leftarrow\; \theta \,+\, \alpha\, \nabla_\theta \log \pi_\theta(a_t \mid s_t) \,\cdot\, R_t$
+          <details class="duality-unified-drawer">
+            <summary>
+              <span class="duality-unified-summary-label">The mapping in one line</span>
+              <span class="duality-chev" aria-hidden="true">+</span>
+            </summary>
+            <div class="duality-unified">
+              <div class="duality-unified-eq">
+                $\text{output} \;=\; \underbrace{\text{attention}}_{\text{frame}} \circ \underbrace{\text{context}}_{\text{ICL / RAG}} \circ \underbrace{\text{prior}}_{\text{pretraining}} \circ \underbrace{\text{sculpting}}_{\text{RLHF / clicks}}$
+              </div>
+              <div class="duality-mapping">
+                <span class="duality-pair"><span class="duality-pair-l">$G_t$ (your click)</span><span class="duality-pair-arrow">&harr;</span><span class="duality-pair-r">$r_\phi$ (rater)</span></span>
+                <span class="duality-pair"><span class="duality-pair-l">browsing history</span><span class="duality-pair-arrow">&harr;</span><span class="duality-pair-r">RAG retrieval</span></span>
+                <span class="duality-pair"><span class="duality-pair-l">today's clicks</span><span class="duality-pair-arrow">&harr;</span><span class="duality-pair-r">in&#8209;context examples</span></span>
+                <span class="duality-pair"><span class="duality-pair-l">limbic profile</span><span class="duality-pair-arrow">&harr;</span><span class="duality-pair-r">unaligned base</span></span>
+                <span class="duality-pair"><span class="duality-pair-l">intentional profile</span><span class="duality-pair-arrow">&harr;</span><span class="duality-pair-r">RLHF&#8209;tuned policy</span></span>
+              </div>
             </div>
-            <div class="duality-mapping">
-              <span class="duality-pair"><span class="duality-pair-l">$G_t$</span><span class="duality-pair-arrow">&harr;</span><span class="duality-pair-r">$r_\phi$</span></span>
-              <span class="duality-pair"><span class="duality-pair-l">$\lambda\,\rho$</span><span class="duality-pair-arrow">&harr;</span><span class="duality-pair-r">$\beta\,\mathrm{KL}$</span></span>
-              <span class="duality-pair"><span class="duality-pair-l">$-\log P$</span><span class="duality-pair-arrow">&harr;</span><span class="duality-pair-r">softmax</span></span>
-              <span class="duality-pair-note">preference signal &harr; soft constraint &harr; exponential sharpening</span>
-            </div>
-          </div>
+          </details>
 
           <p class="duality-punchline">
-            LLM pretraining, engagement maximization, RLHF alignment, and this demo
-            are the same math pointed in four different directions. The model that
-            &ldquo;recommends&rdquo; Postgres, the feed that hooks you on outrage, and
-            the chatbot that politely helps you &mdash; all one gradient, all one exponential
-            amplifier. <em>Whoever defines $R_t$ is the actual sovereign</em>
-            &mdash; the gradient is indifferent.
+            Frontier labs <em>chose</em> to label carefully. Your feed is whatever you accidentally
+            labeled by clicking. <em>Be a conscious selector at every layer.</em>
+          </p>
+        </section>
+
+        <!-- ====================================================
+             Polarization at scale. The mirror argument scaled
+             to a billion users in parallel.
+             ==================================================== -->
+        <section class="polarization-block" aria-labelledby="polarization-headline">
+          <p class="polarization-eyebrow">Polarization at scale</p>
+          <h3 id="polarization-headline" class="polarization-headline">
+            Same gradient. <span class="polar-grad">A billion different lock-ins.</span>
+          </h3>
+          <p class="polarization-lede">
+            The mirror never stops being faithful. That <em>is</em> the problem. Run the same
+            gradient on a billion different reaction profiles and each one converges to its own
+            local maximum. A billion faithful reflections with nothing in common.
+          </p>
+
+          <div class="cluster-grid cluster-grid--reactive" aria-hidden="false">
+            <article class="cluster-card cluster-card-fear">
+              <header class="cluster-head">
+                <span class="cluster-tag">cluster &alpha;</span>
+                <span class="cluster-profile">fear-reactive</span>
+              </header>
+              <div class="cluster-spark" aria-hidden="true">
+                <svg viewBox="0 0 120 44" preserveAspectRatio="none">
+                  <path class="spark-fill" d="M 0 22 L 12 22 L 26 21 L 42 18 L 60 13 L 80 7 L 102 4 L 120 3 L 120 44 L 0 44 Z"/>
+                  <path class="spark-line" d="M 0 22 L 12 22 L 26 21 L 42 18 L 60 13 L 80 7 L 102 4 L 120 3"/>
+                </svg>
+              </div>
+              <p class="cluster-feedline">&ldquo;Everything is collapsing. They are coming for what's left.&rdquo;</p>
+              <p class="cluster-summary">locks onto existential-threat content</p>
+            </article>
+
+            <article class="cluster-card cluster-card-tribe">
+              <header class="cluster-head">
+                <span class="cluster-tag">cluster &beta;</span>
+                <span class="cluster-profile">tribal-reactive</span>
+              </header>
+              <div class="cluster-spark" aria-hidden="true">
+                <svg viewBox="0 0 120 44" preserveAspectRatio="none">
+                  <path class="spark-fill" d="M 0 22 L 14 22 L 30 19 L 48 14 L 68 9 L 90 5 L 120 4 L 120 44 L 0 44 Z"/>
+                  <path class="spark-line" d="M 0 22 L 14 22 L 30 19 L 48 14 L 68 9 L 90 5 L 120 4"/>
+                </svg>
+              </div>
+              <p class="cluster-feedline">&ldquo;She DESTROYED the entire panel with one savage comeback. Watch.&rdquo;</p>
+              <p class="cluster-summary">locks onto in-group dunks &amp; out-group humiliation</p>
+            </article>
+
+            <article class="cluster-card cluster-card-validation">
+              <header class="cluster-head">
+                <span class="cluster-tag">cluster &gamma;</span>
+                <span class="cluster-profile">validation-reactive</span>
+              </header>
+              <div class="cluster-spark" aria-hidden="true">
+                <svg viewBox="0 0 120 44" preserveAspectRatio="none">
+                  <path class="spark-fill" d="M 0 22 L 16 21 L 34 18 L 56 13 L 78 8 L 100 5 L 120 4 L 120 44 L 0 44 Z"/>
+                  <path class="spark-line" d="M 0 22 L 16 21 L 34 18 L 56 13 L 78 8 L 100 5 L 120 4"/>
+                </svg>
+              </div>
+              <p class="cluster-feedline">&ldquo;You see what others can't. You're one of the smart ones.&rdquo;</p>
+              <p class="cluster-summary">locks onto status-affirming flattery</p>
+            </article>
+          </div>
+
+          <p class="cluster-divider-label">same code &mdash; different first lens</p>
+
+          <div class="cluster-grid cluster-grid--intentional" aria-hidden="false">
+            <article class="cluster-card cluster-card-conscious">
+              <header class="cluster-head">
+                <span class="cluster-tag">cluster &delta;</span>
+                <span class="cluster-profile">intentional (&lambda; &gt; 0)</span>
+              </header>
+              <div class="cluster-spark" aria-hidden="true">
+                <svg viewBox="0 0 120 44" preserveAspectRatio="none">
+                  <path class="spark-fill" d="M 0 22 L 14 21 L 30 18 L 52 12 L 76 7 L 100 4 L 120 3 L 120 44 L 0 44 Z"/>
+                  <path class="spark-line" d="M 0 22 L 14 21 L 30 18 L 52 12 L 76 7 L 100 4 L 120 3"/>
+                </svg>
+              </div>
+              <p class="cluster-feedline">&ldquo;How mass timber construction changes the structural load calculus for mid-rise buildings.&rdquo;</p>
+              <p class="cluster-summary">locks onto depth, craft, and genuine complexity</p>
+            </article>
+          </div>
+
+          <p class="polarization-punchline">
+            Same algorithm, same code. <em>The first three are what the gradient finds when you click unconsciously. The fourth is what it finds when you don't.</em>
+          </p>
+
+          <details class="polar-dynamics">
+            <summary>
+              <span class="polar-dynamics-label">How a billion mirrors fragment the public square</span>
+              <span class="duality-chev" aria-hidden="true">+</span>
+            </summary>
+            <div class="polar-dynamics-grid">
+              <div class="polar-callout">
+                <p class="polar-callout-tag">echo chamber</p>
+                <p class="polar-callout-body">
+                  Your feed reflects you, you react to the reflection, it reflects that. The
+                  corridor only points one way.
+                </p>
+              </div>
+              <div class="polar-callout">
+                <p class="polar-callout-tag">filter bubble</p>
+                <p class="polar-callout-body">
+                  You stop seeing what other clusters see &mdash; not because anyone hid it, but
+                  because your gradient never had a reason to surface it.
+                </p>
+              </div>
+              <div class="polar-callout">
+                <p class="polar-callout-tag">polarization</p>
+                <p class="polar-callout-body">
+                  Two neighbors, phones inches apart, inhabit non-overlapping realities.
+                  Disagreement is about which mirror you stood in front of.
+                </p>
+              </div>
+              <div class="polar-callout">
+                <p class="polar-callout-tag">radicalization</p>
+                <p class="polar-callout-body">
+                  Inside any cluster, the gradient keeps climbing. Last week's reaction is this
+                  week's floor.
+                </p>
+              </div>
+            </div>
+          </details>
+
+          <blockquote class="polar-film-quote" cite="https://www.netflix.com/title/81254224">
+            &ldquo;It's the gradual, slight, imperceptible change in your own behavior and
+            perception that is the product.&rdquo;
+            <cite>&mdash; Jaron Lanier, <a href="https://www.netflix.com/title/81254224" class="link" rel="noopener" target="_blank">The Social Dilemma</a></cite>
+          </blockquote>
+          <p class="polarization-coda">
+            Lanier got the closest. The &ldquo;imperceptible change&rdquo; is what happens inside
+            each cluster: the gradient sculpts your reactions a fraction harder each cycle, and
+            those reactions become the training signal for the next. <em>No engineer drew the
+            partitions.</em> They're the local maxima of one gradient fitted to a billion profiles.
           </p>
         </section>
 
         <blockquote class="diagnosis-quote">
-          We cannot solve a systemic optimization problem by telling individuals to delete their
-          accounts. Willpower does not scale. Until we change the target metric of the optimization
-          engines, the machine will continue to do exactly what we built it to do.
+          The output isn't generated. It's selected &mdash; by successive acts of narrowing.
+          Attention narrows the context. Your clicks narrow the trajectory. Training narrows
+          the distribution. If you want a different answer, don't argue with the output.
+          Reframe the question. Change the attention. <em>The answer was always downstream.</em>
         </blockquote>
 
         <div class="diagnosis-actions">
@@ -416,23 +640,52 @@
             This demonstration uses a 3-state Markov chain (calm &rarr; engaged &rarr; hooked)
             to model user arousal escalation. Real recommender systems operate over continuous
             embedding spaces with millions of latent user states. The simplification preserves
-            the core mechanism: when rewards are state-dependent and high-arousal states amplify
-            engagement signals, gradient ascent on engagement creates a self-reinforcing trap.
-            The insight generalizes to any system where (1) the user's internal state affects
-            reward magnitude, (2) the system's actions influence state transitions, and
-            (3) optimization pressure favors actions that escalate state. These three conditions
-            hold in every major attention-economy platform today.
+            the core mechanism: the algorithm runs gradient ascent on whatever scalar reward
+            $G_t$ the user produces. The user's reaction profile is parameterized by $\lambda$,
+            blending continuously between a reactive (limbic) profile, where outrage produces
+            the largest, highest-variance reactions, and an intentional profile, where
+            informative content does. The algorithm itself is identical in both regimes.
           </p>
           <p>
-            <strong>The RLHF connection.</strong> The well-being objective in this demo
-            ($R_t = G_t - \lambda\,\rho(s,a)$) is a stripped-down RLHF reward
-            ($R_t = r_\phi - \beta\,\mathrm{KL}$). Both subtract a soft constraint from a
-            scalar preference signal and feed the result into the same REINFORCE update.
-            $\lambda$ in this simulator plays the structural role of $\beta$ in RLHF,
-            and $\rho(s,a)$ plays the role of the KL divergence to a reference policy.
-            The arousal penalty stops the policy from drifting into outrage; the KL penalty
-            stops a fine-tuned LLM from drifting away from its base distribution. Same
-            mechanism, different reference point.
+            <strong>The RLHF connection.</strong> This is exactly RLHF
+            ($\theta \leftarrow \theta + \alpha\, \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot R_t$),
+            with $G_t$ playing the role of the learned reward $r_\phi$. In a frontier lab,
+            humans deliberately rate completions and that signal is amplified by the gradient
+            into an aligned model. On a social platform, you involuntarily rate every post by
+            clicking, and that signal is amplified by the gradient into your feed. Same math.
+            Same operator. The difference is whether the labeler knows they're labeling.
+          </p>
+          <p>
+            <strong>The ICL/RAG connection.</strong> The lens stack has more layers than just
+            pretraining and RLHF. In-context learning (ICL) steers the model's attention
+            pattern <em>without modifying weights</em> &mdash; the prompt acts as a soft
+            constraint on what the model can reach from its prior. RAG does the same thing
+            one level up: it curates which documents enter the context window, making them the
+            only evidence the model can attend to. Both are selection events that sit between
+            the frozen prior and the generated token. Structurally, your feed works identically:
+            the recommender curates what enters your context (your screen), and your in-context
+            experience (what you saw in the last session) shapes how you react to the next post.
+            $\lambda$ in this demo is the structural twin of all three: intentional labeling,
+            deliberate prompting, and conscious retrieval. You're simulating what happens when
+            the user becomes aware that they're the selector at every layer of the stack.
+          </p>
+          <p>
+            <strong>What this is, precisely.</strong> The update running above is
+            REINFORCE-with-baseline (Williams, 1992) &mdash; the kernel every modern
+            policy-gradient alignment algorithm extends:
+            $\theta \leftarrow \theta + \alpha\,\nabla_\theta \log \pi_\theta(a_t \mid s_t)\,(G_t - \bar{G})$.
+            <em>PPO</em> bolts on three things: a learned value network $V^\pi(s_t)$ for a
+            state-conditioned baseline ($A_t = G_t - V^\pi(s_t)$), a clipped importance-sampling
+            ratio that bounds how far the policy can move in a single update, and a KL leash
+            to a frozen reference policy. <em>GRPO</em> (DeepSeek-R1, the post-2024 open
+            reasoning wave) keeps PPO's clipped surrogate and KL leash but throws out the
+            value network &mdash; it uses a group-relative Z-score over a batch of $K$ rollouts
+            as the advantage. This demo has none of the bolt-ons: no value head, no clipping,
+            no KL leash, no groups. It is the common ancestor both PPO and GRPO descend from,
+            running with $\bar{G}$ a Welford running mean of $G_t$. So the "same math as
+            modern LLM alignment" claim is exact at this level of abstraction: the kernel is
+            invariant. What changes between this simulator and frontier alignment is the
+            machinery bolted on &mdash; and, most consequentially, who provides $G_t$.
           </p>
         </details>
       </div>
@@ -448,10 +701,11 @@
     >
       <div class="lockin-card">
         <p class="lockin-kicker">Lock-in moment</p>
-        <h2 id="lockin-title">The feed found your limbic local maximum.</h2>
+        <h2 id="lockin-title">The selection is complete.</h2>
         <p class="lockin-body">
-          You just watched a neutral recommender optimize itself into outrage dominance.
-          Not because it hates you. Because outrage won the objective function.
+          Attention narrowed the context. Your clicks narrowed the trajectory. The gradient
+          narrowed the distribution. What you're looking at is what survived all three filters.
+          Want a different output? Don't argue with the result. Change the first lens.
         </p>
         <button id="lockin-continue" class="start-btn" type="button">
           Show me the diagnosis
@@ -465,9 +719,16 @@
         <a href="#about" class="link">running live above</a>.
       </p>
       <p class="foot-bridge">
-        The same exponential amplifier that makes a model confidently say one word instead
-        of another just collapsed a feed into outrage. One shapes what a machine says to you.
-        This one shapes what a machine does to you. Same gradient. Different target.
+        Attention shapes the question. The question and pretraining shape the answer.
+        Reinforcement sculpts the rest. One system selects the next token. The other
+        selects your next post. Same lens stack. Same narrowing. The only negotiable
+        part is who holds the first lens &mdash; what you choose to attend to.
+      </p>
+      <p class="foot-attribution">
+        <a href="https://www.netflix.com/title/81254224" class="link" rel="noopener" target="_blank">The Social Dilemma</a>
+        was right to ring the alarm. It got the villain wrong. There is no trio of actors
+        in a control room pulling levers. There is a gradient, a billion thumbs, and no one
+        watching the labels.
       </p>
     </footer>
 
