@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="Inter, -apple-system, system-ui, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0d12"/>
+      <stop offset="1" stop-color="#11161f"/>
+    </linearGradient>
+    <radialGradient id="glowR" cx="0.85" cy="0.2" r="0.6">
+      <stop offset="0" stop-color="#ff4d5a" stop-opacity="0.30"/>
+      <stop offset="0.6" stop-color="#ff4d5a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0.15" cy="0.85" r="0.55">
+      <stop offset="0" stop-color="#5ab4ff" stop-opacity="0.18"/>
+      <stop offset="0.6" stop-color="#5ab4ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="title" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5ab4ff"/>
+      <stop offset="1" stop-color="#ff4d5a"/>
+    </linearGradient>
+    <linearGradient id="redArea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff4d5a" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ff4d5a" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="blueArea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5ab4ff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#5ab4ff" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glowR)"/>
+  <rect width="1200" height="630" fill="url(#glowB)"/>
+
+  <!-- eyebrow -->
+  <text x="80" y="120" fill="#6e7681" font-size="20" letter-spacing="6" font-weight="600">A LIVE POLICY-GRADIENT DEMONSTRATION</text>
+
+  <!-- headline -->
+  <text x="80" y="220" fill="#e6edf3" font-size="76" font-weight="700" letter-spacing="-2">Your feed isn't evil.</text>
+  <text x="80" y="306" fill="url(#title)" font-size="76" font-weight="700" letter-spacing="-2">It just descended a gradient.</text>
+
+  <!-- subtitle -->
+  <text x="80" y="370" fill="#8b949e" font-size="24" font-weight="400">Watch a neutral algorithm learn to feed you outrage in real time.</text>
+  <text x="80" y="402" fill="#8b949e" font-size="24" font-weight="400">No villain required &#x2014; just math.</text>
+
+  <!-- sparkline frame -->
+  <rect x="80" y="455" width="1040" height="120" rx="10" fill="#0d1117" stroke="#1f2632" stroke-width="1"/>
+
+  <!-- blue informative area (declines) -->
+  <path d="M 90 470 L 250 478 L 410 500 L 540 530 L 660 555 L 780 565 L 900 568 L 1020 570 L 1110 570 L 1110 565 L 90 565 Z" fill="url(#blueArea)"/>
+  <path d="M 90 470 L 250 478 L 410 500 L 540 530 L 660 555 L 780 565 L 900 568 L 1020 570 L 1110 570" stroke="#5ab4ff" stroke-width="2" fill="none"/>
+
+  <!-- red outrage area (climbs) -->
+  <path d="M 90 565 L 250 562 L 410 540 L 540 510 L 660 485 L 780 475 L 900 472 L 1020 470 L 1110 470 L 1110 565 Z" fill="url(#redArea)"/>
+  <path d="M 90 565 L 250 562 L 410 540 L 540 510 L 660 485 L 780 475 L 900 472 L 1020 470 L 1110 470" stroke="#ff4d5a" stroke-width="2.4" fill="none"/>
+
+  <!-- lock-in marker -->
+  <line x1="780" y1="455" x2="780" y2="575" stroke="#ff4d5a" stroke-width="1" stroke-dasharray="4,4" opacity="0.85"/>
+  <text x="788" y="472" fill="#ff4d5a" font-size="13" font-weight="600" font-family="JetBrains Mono, ui-monospace, monospace">lock-in</text>
+
+  <!-- footer URL -->
+  <text x="80" y="612" fill="#6e7681" font-size="16" font-family="JetBrains Mono, ui-monospace, monospace" letter-spacing="2">$ python demo.py &#x2192; localhost:8000</text>
+</svg>

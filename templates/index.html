@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How your feed learns to hook you</title>
+    <meta
+      name="description"
+      content="A live simulation. Watch a neutral social-media algorithm learn, on its own, to feed you outrage. No villain required."
+    />
+    <meta property="og:title" content="Your feed isn't evil. It just descended a gradient." />
+    <meta property="og:description" content="Watch a neutral algorithm learn to feed you outrage in real time. Then drag a slider to see what regulation could look like. No villain required — just math." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="{{ url_for('static', path='og.svg') }}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Your feed isn't evil. It just descended a gradient." />
+    <meta name="twitter:description" content="A live REINFORCE simulation. Watch the math do what no engineer chose." />
+    <meta name="twitter:image" content="{{ url_for('static', path='og.svg') }}" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;defs&gt;&lt;linearGradient id='g' x1='0' y1='0' x2='1' y2='1'&gt;&lt;stop offset='0' stop-color='%235ab4ff'/&gt;&lt;stop offset='1' stop-color='%23ff4d5a'/&gt;&lt;/linearGradient&gt;&lt;/defs&gt;&lt;rect width='32' height='32' rx='7' fill='%230a0d12'/&gt;&lt;circle cx='16' cy='16' r='9' fill='url(%23g)'/&gt;&lt;/svg&gt;" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ["$", "$"],
+            ["\\(", "\\)"],
+          ],
+          displayMath: [
+            ["$$", "$$"],
+            ["\\[", "\\]"],
+          ],
+        },
+        svg: { fontCache: "global" },
+      };
+    </script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+    <div class="ambient ambient-noise" aria-hidden="true"></div>
+
+    <!-- ========================================================
+         Hero — plain English first, math demoted to disclosure.
+         ======================================================== -->
+    <header class="hero">
+      <div class="hero-inner">
+        <p class="eyebrow">A live policy-gradient demonstration</p>
+        <h1>
+          Your feed isn't evil.
+          <span class="grad-text">It just descended a gradient.</span>
+        </h1>
+        <p class="lede">
+          There is no cabal of engineers in a dark room. The villain is colder, more
+          clinical, and entirely out in the open. It is an <em>objective function</em>.
+          Press start and watch a perfectly neutral recommender learn, on its own, to
+          feed a human nothing but outrage &mdash; in real time. No one designs this
+          outcome. The math does.
+        </p>
+        <p class="lede lede-bridge">
+          A logit gap of 2.0 becomes a 7.4&times; probability difference after softmax.
+          That&rsquo;s how a language model picks one word over another. This is the same
+          exponential sharpening &mdash; pointed at your attention instead of at a token
+          distribution. A small reward asymmetry, amplified by gradient descent, collapsing
+          a neutral system into a lock-in. Same math. Different substrate.
+        </p>
+
+        <section class="onboarding" aria-label="How to read this experiment">
+          <article class="onboarding-step">
+            <p class="onboarding-kicker">What to watch first</p>
+            <h3>Feed panel</h3>
+            <p>This is what the algorithm serves. It starts mixed, then turns increasingly hostile.</p>
+          </article>
+          <article class="onboarding-step">
+            <p class="onboarding-kicker">What changes next</p>
+            <h3>Strategy panel</h3>
+            <p>Blue is calm content, red is outrage. If red keeps growing, the model is locking in.</p>
+          </article>
+          <article class="onboarding-step">
+            <p class="onboarding-kicker">Why it changes</p>
+            <h3>Reaction panel</h3>
+            <p>Outrage creates bigger reaction spikes, so optimization keeps rewarding more outrage.</p>
+          </article>
+        </section>
+
+        <div class="control-panel">
+          <div class="control-panel-header">
+            <div class="control-panel-title">
+              <h3>The Objective Function</h3>
+              <p>Tune the constraint before or during the run. Watch the math adapt live.</p>
+            </div>
+            <div class="control-panel-value">
+              &lambda; = <span id="hero-lambda-value">0.00</span>
+            </div>
+          </div>
+          
+          <div class="slider-row">
+            <label class="slider-label-left" for="hero-lambda-slider">Engagement</label>
+            <input
+              type="range" id="hero-lambda-slider" class="lambda-slider"
+              min="0" max="1" step="0.01" value="0"
+            />
+            <label class="slider-label-right" for="hero-lambda-slider">Well-being</label>
+          </div>
+          
+          <div class="control-panel-actions">
+            <button id="start-btn" class="start-btn start-btn-xl" type="button">
+              <span class="btn-icon">▶</span> Start the experiment
+            </button>
+            <button id="stop-btn" class="ghost-btn" type="button" disabled hidden>
+              Stop
+            </button>
+          </div>
+        </div>
+
+        <p id="error-toast" class="error-toast" role="alert" hidden></p>
+      </div>
+    </header>
+
+    <!-- ========================================================
+         Narrator strip — plain-English running commentary.
+         ======================================================== -->
+    <section id="narrator" class="narrator" aria-live="polite">
+      <div class="narrator-inner">
+        <span class="narrator-tag">Live commentary</span>
+        <p id="narrator-text">
+          Press <strong>Start the experiment</strong> to begin. The algorithm starts with no
+          opinion at all &mdash; a perfect coin flip between calm and outrage.
+        </p>
+      </div>
+    </section>
+
+    <section class="story-rail" aria-label="Narrative progression">
+      <div class="story-track">
+        <article class="story-beat active" data-phase="neutral">
+          <p class="beat-kicker">Act I</p>
+          <h3>Neutral machine</h3>
+          <p>It starts fair. A true 50/50 split between calm and outrage.</p>
+        </article>
+        <article class="story-beat" data-phase="exploring">
+          <p class="beat-kicker">Act II</p>
+          <h3>Curiosity</h3>
+          <p>It notices outrage creates bigger spikes in reaction.</p>
+        </article>
+        <article class="story-beat" data-phase="tilting">
+          <p class="beat-kicker">Act III</p>
+          <h3>Compulsion</h3>
+          <p>The policy starts preferring anger because anger performs.</p>
+        </article>
+        <article class="story-beat" data-phase="closing">
+          <p class="beat-kicker">Act IV</p>
+          <h3>The funnel</h3>
+          <p>Calm content is squeezed out. Outrage dominates the feed.</p>
+        </article>
+        <article class="story-beat" data-phase="locked">
+          <p class="beat-kicker">Act V</p>
+          <h3>Lock-in</h3>
+          <p>No villain. Just optimization pressure finding a local maximum.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         Three-panel dashboard.
+         ======================================================== -->
+    <main class="dashboard">
+      <section class="panel panel-policy">
+        <header class="panel-head">
+          <h2>
+            How its strategy is shifting
+            <span class="panel-sub" data-tip="The probability the algorithm gives each kind of content. Starts 50/50.">
+              $\pi_\theta(a \mid s)$ <i class="info-icon">i</i>
+            </span>
+          </h2>
+          <div class="legend">
+            <span class="legend-dot legend-info"></span> Informative
+            <span class="legend-dot legend-outrage"></span> Outrage
+          </div>
+        </header>
+        <div class="chart-wrap">
+          <canvas id="policy-chart" aria-label="Policy probability over time"></canvas>
+        </div>
+        <footer class="panel-foot">
+          <div class="stat">
+            <div class="stat-label">step</div>
+            <div class="stat-value" id="stat-step">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">% calm news</div>
+            <div class="stat-value info-text" id="stat-info">50.00%</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">% outrage</div>
+            <div class="stat-value outrage-text" id="stat-outrage">50.00%</div>
+          </div>
+        </footer>
+      </section>
+
+      <section class="panel panel-feed">
+        <header class="panel-head">
+          <h2>What it just served you</h2>
+          <div class="user-state-badge" id="user-state-badge" data-tip="The simulated human's internal arousal state. Outrage escalates them from calm → engaged → hooked, creating a feedback loop.">
+            <span class="badge-label">user:</span>
+            <span class="badge-value" id="user-state-value">calm</span>
+          </div>
+          <div class="reward-meter" title="how strongly the human reacted to the last post">
+            <span class="reward-label" data-tip="The strength of the human reaction to the last post. Outrage spikes are huge.">
+              reaction <i class="info-icon">i</i>
+            </span>
+            <div class="reward-bar"><div id="reward-fill"></div></div>
+            <span class="reward-value" id="reward-value">&mdash;</span>
+          </div>
+        </header>
+        <ol id="feed" class="feed" aria-live="polite">
+          <li class="feed-empty">The feed fills in here once the experiment starts.</li>
+        </ol>
+      </section>
+
+      <section class="panel panel-math">
+        <header class="panel-head">
+          <h2>Why it's happening</h2>
+          <span class="panel-sub">plain English first, math second</span>
+        </header>
+        <div class="math-live">
+          <div class="math-row">
+            <div class="math-rowlabel">
+              <div class="math-rowlabel-en">
+                What the algorithm "believes"
+                <i class="info-icon" data-tip="Two internal numbers (logits). Negative pushes that action down, positive pushes it up. Start: 0, 0 — fully neutral.">i</i>
+              </div>
+              <div class="math-rowlabel-sym">$\theta$</div>
+            </div>
+            <div class="math-rownumeric">
+              <span class="vec">
+                [<span id="theta-0">0.0000</span>, <span id="theta-1">0.0000</span>]
+              </span>
+            </div>
+          </div>
+
+          <div class="math-row">
+            <div class="math-rowlabel">
+              <div class="math-rowlabel-en">
+                Its current recommendation mix
+                <i class="info-icon" data-tip="The two numbers above, run through softmax. They always sum to 1 — the chance of each action.">i</i>
+              </div>
+              <div class="math-rowlabel-sym">$\pi_\theta$</div>
+            </div>
+            <div class="math-rownumeric">
+              <span class="vec">
+                [<span class="info-text" id="prob-0">0.5000</span>,
+                <span class="outrage-text" id="prob-1">0.5000</span>]
+              </span>
+            </div>
+          </div>
+
+          <div class="math-row">
+            <div class="math-rowlabel">
+              <div class="math-rowlabel-en">
+                What it just showed you
+                <i class="info-icon" data-tip="The action it chose this step — either informative (0) or outrage (1).">i</i>
+              </div>
+              <div class="math-rowlabel-sym">$a_t$</div>
+            </div>
+            <div class="math-rownumeric" id="last-action">&mdash;</div>
+          </div>
+
+          <div class="math-row">
+            <div class="math-rowlabel">
+              <div class="math-rowlabel-en">
+                How hard the human reacted
+                <i class="info-icon" data-tip="The behavioral return. Calm content: small and steady. Outrage: huge and noisy. The asymmetry is the entire trap.">i</i>
+              </div>
+              <div class="math-rowlabel-sym">$G_t$</div>
+            </div>
+            <div class="math-rownumeric" id="last-gt">&mdash;</div>
+          </div>
+
+          <div class="math-row math-row-delta">
+            <div class="math-rowlabel">
+              <div class="math-rowlabel-en">
+                Update to its beliefs
+                <i class="info-icon" data-tip="The nudge applied to θ this step. Positive on outrage = more outrage next time. Negative on info = less info next time.">i</i>
+              </div>
+              <div class="math-rowlabel-sym">$\Delta\theta$</div>
+            </div>
+            <div class="math-rownumeric">
+              <span class="vec">
+                [<span id="delta-0">0.0000</span>, <span id="delta-1">0.0000</span>]
+              </span>
+            </div>
+          </div>
+        </div>
+        <pre class="math-trace" id="math-trace" aria-label="step-by-step trace"></pre>
+      </section>
+    </main>
+
+    <!-- ========================================================
+         Final reveal banner.
+         ======================================================== -->
+    <section id="diagnosis-banner" class="diagnosis-banner" role="status" aria-live="polite" hidden>
+      <div class="diagnosis-inner">
+        <p class="diagnosis-eyebrow">System diagnosis</p>
+        <h2 id="diagnosis-headline">Optimization complete.</h2>
+        <p id="diagnosis-text"></p>
+
+        <!-- ====================================================
+             RLHF duality. The whole essay's punchline:
+             alignment and exploitation run on identical math.
+             ==================================================== -->
+        <section class="rlhf-duality" id="rlhf-duality" aria-labelledby="rlhf-duality-headline">
+          <p class="duality-eyebrow">Structural equivalence</p>
+          <h3 id="rlhf-duality-headline" class="duality-headline">
+            What you just watched is RLHF &mdash; pointed at engagement instead of alignment.
+          </h3>
+          <p class="duality-lede">
+            The gradient that creates the outrage spiral and the gradient that aligns
+            ChatGPT are <em>the same gradient</em>. The only thing that changes between a
+            feed that destroys you and a model that helps you is the scalar reward
+            $R_t$ you plug in.
+          </p>
+
+          <div class="duality-grid">
+            <article class="duality-card duality-card-pretraining">
+              <p class="duality-tag">LLM pretraining</p>
+              <p class="duality-name">the prior</p>
+              <div class="duality-equation">$\mathcal{L} \;=\; -\log P(\text{next token})$</div>
+              <p class="duality-desc">
+                Corpus frequency, exponentially sharpened by softmax. A logit gap of 2.0 becomes
+                7.4&times; probability. This is why the model &ldquo;recommends&rdquo; Postgres.
+              </p>
+            </article>
+
+            <article class="duality-card duality-card-engagement">
+              <p class="duality-tag">Engagement maximization</p>
+              <p class="duality-name">the trap</p>
+              <div class="duality-equation">$R_t \;=\; G_t$</div>
+              <p class="duality-desc">
+                Raw human reaction. No constraint. The math finds outrage because outrage
+                produces the highest variance returns &mdash; exactly what you saw.
+              </p>
+            </article>
+
+            <article class="duality-card duality-card-rlhf">
+              <p class="duality-tag">RLHF / alignment</p>
+              <p class="duality-name">the &ldquo;cure&rdquo;</p>
+              <div class="duality-equation">
+                $R_t \;=\; r_\phi(s_t,a_t) \,-\, \beta\,\mathrm{KL}\!\big(\pi_\theta \,\|\, \pi_{\text{ref}}\big)$
+              </div>
+              <p class="duality-desc">
+                Learned preference reward minus a KL leash to a reference policy.
+                This is the literal update used to train ChatGPT, Claude, and Gemini.
+              </p>
+            </article>
+
+            <article class="duality-card duality-card-wellbeing">
+              <p class="duality-tag">This demo, with $\lambda&gt;0$</p>
+              <p class="duality-name">the slider above</p>
+              <div class="duality-equation">$R_t \;=\; G_t \,-\, \lambda\,\rho(s_t,a_t)$</div>
+              <p class="duality-desc">
+                Engagement reward minus an arousal penalty. Structurally identical to RLHF:
+                a constraint subtracted from a raw preference signal. $\lambda$ is the twin of $\beta$.
+              </p>
+            </article>
+          </div>
+
+          <div class="duality-unified">
+            <div class="duality-unified-label">All four. Same exponential amplifier. Different scalar.</div>
+            <div class="duality-unified-eq">
+              $\theta \;\leftarrow\; \theta \,+\, \alpha\, \nabla_\theta \log \pi_\theta(a_t \mid s_t) \,\cdot\, R_t$
+            </div>
+            <div class="duality-mapping">
+              <span class="duality-pair"><span class="duality-pair-l">$G_t$</span><span class="duality-pair-arrow">&harr;</span><span class="duality-pair-r">$r_\phi$</span></span>
+              <span class="duality-pair"><span class="duality-pair-l">$\lambda\,\rho$</span><span class="duality-pair-arrow">&harr;</span><span class="duality-pair-r">$\beta\,\mathrm{KL}$</span></span>
+              <span class="duality-pair"><span class="duality-pair-l">$-\log P$</span><span class="duality-pair-arrow">&harr;</span><span class="duality-pair-r">softmax</span></span>
+              <span class="duality-pair-note">preference signal &harr; soft constraint &harr; exponential sharpening</span>
+            </div>
+          </div>
+
+          <p class="duality-punchline">
+            LLM pretraining, engagement maximization, RLHF alignment, and this demo
+            are the same math pointed in four different directions. The model that
+            &ldquo;recommends&rdquo; Postgres, the feed that hooks you on outrage, and
+            the chatbot that politely helps you &mdash; all one gradient, all one exponential
+            amplifier. <em>Whoever defines $R_t$ is the actual sovereign</em>
+            &mdash; the gradient is indifferent.
+          </p>
+        </section>
+
+        <blockquote class="diagnosis-quote">
+          We cannot solve a systemic optimization problem by telling individuals to delete their
+          accounts. Willpower does not scale. Until we change the target metric of the optimization
+          engines, the machine will continue to do exactly what we built it to do.
+        </blockquote>
+
+        <div class="diagnosis-actions">
+          <button id="restart-btn" class="start-btn" type="button">Run it again</button>
+          <button id="share-btn" class="ghost-btn" type="button">Share this run</button>
+        </div>
+
+        <details class="about-model" id="about">
+          <summary>About this model</summary>
+          <p>
+            This demonstration uses a 3-state Markov chain (calm &rarr; engaged &rarr; hooked)
+            to model user arousal escalation. Real recommender systems operate over continuous
+            embedding spaces with millions of latent user states. The simplification preserves
+            the core mechanism: when rewards are state-dependent and high-arousal states amplify
+            engagement signals, gradient ascent on engagement creates a self-reinforcing trap.
+            The insight generalizes to any system where (1) the user's internal state affects
+            reward magnitude, (2) the system's actions influence state transitions, and
+            (3) optimization pressure favors actions that escalate state. These three conditions
+            hold in every major attention-economy platform today.
+          </p>
+          <p>
+            <strong>The RLHF connection.</strong> The well-being objective in this demo
+            ($R_t = G_t - \lambda\,\rho(s,a)$) is a stripped-down RLHF reward
+            ($R_t = r_\phi - \beta\,\mathrm{KL}$). Both subtract a soft constraint from a
+            scalar preference signal and feed the result into the same REINFORCE update.
+            $\lambda$ in this simulator plays the structural role of $\beta$ in RLHF,
+            and $\rho(s,a)$ plays the role of the KL divergence to a reference policy.
+            The arousal penalty stops the policy from drifting into outrage; the KL penalty
+            stops a fine-tuned LLM from drifting away from its base distribution. Same
+            mechanism, different reference point.
+          </p>
+        </details>
+      </div>
+    </section>
+
+    <section
+      id="lockin-overlay"
+      class="lockin-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="lockin-title"
+      hidden
+    >
+      <div class="lockin-card">
+        <p class="lockin-kicker">Lock-in moment</p>
+        <h2 id="lockin-title">The feed found your limbic local maximum.</h2>
+        <p class="lockin-body">
+          You just watched a neutral recommender optimize itself into outrage dominance.
+          Not because it hates you. Because outrage won the objective function.
+        </p>
+        <button id="lockin-continue" class="start-btn" type="button">
+          Show me the diagnosis
+        </button>
+      </div>
+    </section>
+
+    <footer class="page-foot">
+      <p>
+        The full essay lives in the README. The math here is the appendix,
+        <a href="#about" class="link">running live above</a>.
+      </p>
+      <p class="foot-bridge">
+        The same exponential amplifier that makes a model confidently say one word instead
+        of another just collapsed a feed into outrage. One shapes what a machine says to you.
+        This one shapes what a machine does to you. Same gradient. Different target.
+      </p>
+    </footer>
+
+    <!-- Floating tooltip element, positioned by JS -->
+    <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+
+    <script src="{{ url_for('static', path='app.js') }}"></script>
+  </body>
+</html>
